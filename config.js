@@ -36,9 +36,26 @@ function getRandomCard() {
 }
 
 function startGame() {
+  // NEW: The Game Over / Reset Check
+  if (balance === 0 && currentBet === 0) {
+    // Give them a fresh bankroll
+    balance = 200;
+    currentBet = 100;
+    
+    // Reset the screen visuals back to default
+    cardsEl.textContent = "—";
+    sumEl.textContent = "0";
+    messageEl.textContent = "Bankroll reset to $200! Good luck! 💸";
+    
+    updateUI();
+    return; // Stop the function here so they see the reset message first!
+  }
+
+  // Your existing safety check
   if (isAlive === true || currentBet === 0) {
     return;
   }
+
   isAlive = true;
   hasBlackjack = false;
 
@@ -133,6 +150,15 @@ function decreaseBet() {
 function payout(didWin) {
   if (didWin === true) {
     balance += currentBet * 2;
+  } else {
+    balance -= currentBet;
   }
+  
+  // NEW: Prevent negative balance and trigger bankruptcy
+  if (balance <= 0) {
+    balance = 0;
+    currentBet = 0; // Force their bet to 0
+  }
+  
   updateUI();
 }
