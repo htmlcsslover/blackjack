@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style>
+      /* Subtle radial gradient to make the "table" look 3D */
+      body {
+        background: radial-gradient(circle at center, #14532d 0%, #064e3b 100%);
+      }
+    </style>
+  </head>
+
+  <body class="min-h-screen flex flex-col items-center justify-center font-sans antialiased text-slate-100 p-4">
+    
+    <div class="bg-white/5 backdrop-blur-xl border border-white/10 p-8 sm:p-10 rounded-3xl shadow-2xl flex flex-col items-center text-center max-w-md w-full overflow-hidden relative">
+      
+      <div class="absolute -top-10 -right-10 w-32 h-32 bg-yellow-400/10 blur-3xl rounded-full"></div>
+
+      <h1 class="text-transparent bg-clip-text bg-gradient-to-b from-yellow-200 to-yellow-500 font-black text-5xl mb-2 tracking-tighter uppercase italic">
+        Blackjack
+      </h1>
+
+      <div id="message-el" class="text-emerald-200 font-medium text-lg mb-6 h-8 flex items-center justify-center transition-all duration-300">
+        Place your bet to start!
+      </div>
+
+      <div class="w-full mb-6">
+        <div class="flex justify-between gap-4 mb-3">
+          <div class="bg-black/30 rounded-xl p-3 w-1/2 border border-white/5 shadow-inner">
+            <span class="text-[10px] uppercase tracking-[0.2em] text-emerald-400 font-bold block mb-1">Balance</span>
+            <p id="balance-el" class="text-2xl font-black text-white">$200</p>
+          </div>
+          <div class="bg-black/30 rounded-xl p-3 w-1/2 border border-white/5 shadow-inner">
+            <span class="text-[10px] uppercase tracking-[0.2em] text-emerald-400 font-bold block mb-1">Current Bet</span>
+            <p id="bet-el" class="text-2xl font-black text-yellow-400">$100</p>
+          </div>
+        </div>
+
+        <div class="flex justify-center gap-3">
+          <button id="decrease-bet-btn" class="bg-red-500/10 hover:bg-red-500/20 text-red-300 border border-red-500/20 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all cursor-pointer" onclick="decreaseBet()">
+            - $10
+          </button>
+          <button id="increase-bet-btn" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all cursor-pointer" onclick="increaseBet()">
+            + $10
+          </button>
+        </div>
+      </div>
+
+      <div class="w-full bg-black/20 rounded-2xl p-6 mb-8 border border-white/5 shadow-inner">
+        <div class="flex flex-col gap-4">
+          <div>
+            <span class="text-[10px] uppercase tracking-[0.3em] text-emerald-400 font-bold block mb-1">Your Hand</span>
+            <p id="cards-el" class="text-3xl font-mono font-bold tracking-widest text-white">—</p>
+          </div>
+          
+          <div class="h-[1px] bg-white/10 w-full"></div>
+          
+          <div>
+            <span class="text-[10px] uppercase tracking-[0.3em] text-emerald-400 font-bold block mb-1">Total Score</span>
+            <p id="sum-el" class="text-5xl font-black text-white">0</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-3 w-full">
+        <button
+          onclick="startGame()"
+          class="group relative w-full bg-gradient-to-b from-yellow-400 to-yellow-600 text-emerald-950 font-black text-lg uppercase py-4 rounded-xl shadow-lg hover:shadow-yellow-500/20 hover:-translate-y-0.5 active:translate-y-0.5 transition-all duration-200 cursor-pointer"
+          id="start-btn"
+        >
+          Deal Cards
+        </button>
+
+        <div class="flex gap-3 w-full">
+          <button
+            onclick="newCard()"
+            class="w-1/2 bg-white/10 hover:bg-white/20 text-white font-bold text-sm uppercase py-3 rounded-xl border border-white/10 transition-all cursor-pointer backdrop-blur-md"
+            id="hit-btn"
+          >
+            Hit
+          </button>
+          
+          <button
+            onclick="stand()"
+            class="w-1/2 bg-black/20 hover:bg-black/40 text-white font-bold text-sm uppercase py-3 rounded-xl border border-white/10 transition-all cursor-pointer backdrop-blur-md"
+            id="stand-btn"
+          >
+            Stand
+          </button>
+        </div>
+      </div>
+
+      <p class="mt-8 text-[10px] text-emerald-500/60 uppercase tracking-widest font-bold">
+        Blackjack pays 2:1
+      </p>
+    </div>
+
+    <script src="config.js"></script>
+  </body>
+</html>
