@@ -1,4 +1,3 @@
-// --- VARIABLES & DOM SETUP (I left this intact for you) ---
 let cards = [];
 let isAlive = false;
 let hasBlackjack = false;
@@ -12,47 +11,58 @@ let balanceEl = document.getElementById("balance-el");
 let betEl = document.getElementById("bet-el");
 
 let balance = 200;
-let currentBet = 100;
+let currentBet = 0; // Starts at 0 so they don't auto-bet!
 
-// Button Event Listeners
-document
-  .getElementById("decrease-bet-btn")
-  .addEventListener("click", decreaseBet);
-document
-  .getElementById("increase-bet-btn")
-  .addEventListener("click", increaseBet);
+// Event Listeners
+document.getElementById("decrease-bet-btn").addEventListener("click", decreaseBet);
+document.getElementById("increase-bet-btn").addEventListener("click", increaseBet);
 
 updateUI();
 
 function getRandomCard() {
   let randomNumber = Math.floor(Math.random() * 13) + 1;
-  if (randomNumber > 10) {
-    return 10;
-  } else if (randomNumber === 1) {
-    return 11;
-  } else {
-    return randomNumber;
+  if (randomNumber > 10) return 10;
+  if (randomNumber === 1) return 11;
+  return randomNumber;
+}
+
+// NEW: Dynamic Ace Calculator
+function calculateScore(cardArray) {
+  let tempSum = 0;
+  let aces = 0;
+  
+  for (let card of cardArray) {
+    tempSum += card;
+    if (card === 11) aces++;
   }
+  
+  // If we bust, but we have an Ace, drop the Ace from 11 to 1 (subtract 10)
+  while (tempSum > 21 && aces > 0) {
+    tempSum -= 10;
+    aces--;
+  }
+  
+  return tempSum;
 }
 
 function startGame() {
-  // NEW: The Game Over / Reset Check
-  if (balance === 0 && currentBet === 0) {
-    // Give them a fresh bankroll
+  // Prevent mid-game reset exploit
+  if (isAlive) return;
+
+  // The "Broke" Soft-Lock Fix (Check if < 10, not === 0)
+  if (balance < 10 && currentBet === 0) {
     balance = 200;
-    currentBet = 100;
-    
-    // Reset the screen visuals back to default
+    currentBet = 0;
     cardsEl.textContent = "—";
     sumEl.textContent = "0";
-    messageEl.textContent = "Bankroll reset to $200! Good luck! 💸";
-    
+    messageEl.textContent = "Bankroll reset to $200! Place a bet! 💸";
     updateUI();
-    return; // Stop the function here so they see the reset message first!
+    return;
   }
 
-  // Your existing safety check
-  if (isAlive === true || currentBet === 0) {
+  // Prevent playing without betting
+  if (currentBet === 0) {
+    messageEl.textContent = "Please place a bet first!";
     return;
   }
 
@@ -62,35 +72,37 @@ function startGame() {
   let firstCard = getRandomCard();
   let secondCard = getRandomCard();
   cards = [firstCard, secondCard];
-  sum = firstCard + secondCard;
+  
+  // Use our new Ace-friendly math
+  sum = calculateScore(cards);
   renderGame();
 }
 
 function renderGame() {
-  cardsEl.textContent = " ";
-  for (let i = 0; i < cards.length; i++) {
-    cardsEl.textContent += cards[i] + " ";
-  }
+  // Fix: Clean String Concatenation
+  cardsEl.textContent = cards.join(" ");
   sumEl.textContent = sum;
+
   if (sum <= 20) {
-    messageEl.textContent = "Hit or Stand?";
+    message = "Hit or Stand?";
   } else if (sum === 21) {
-    messageEl.textContent = "Blackjack! You win 2x your bet! 🥳";
+    message = "Blackjack! You win! 🥳";
     hasBlackjack = true;
     isAlive = false;
     payout(true);
   } else {
-    messageEl.textContent = "Bust! You lose. 😭";
+    message = "Bust! You lose. 😭";
     isAlive = false;
     payout(false);
   }
+  messageEl.textContent = message;
 }
 
 function newCard() {
   if (isAlive === true && hasBlackjack === false) {
-    let newCard = getRandomCard();
-    cards.push(newCard);
-    sum += newCard;
+    let card = getRandomCard();
+    cards.push(card);
+    sum = calculateScore(cards); // Ace-friendly math
     renderGame();
   }
 }
@@ -99,32 +111,41 @@ function stand() {
   if (isAlive === true) {
     isAlive = false;
     let dealerSum = 0;
+    let dealerAces = 0;
 
+    // Dealer needs dynamic Aces too!
     while (dealerSum < 17) {
-      dealerSum += getRandomCard();
+      let card = getRandomCard();
+      dealerSum += card;
+      if (card === 11) dealerAces++;
+      
+      while (dealerSum > 21 && dealerAces > 0) {
+        dealerSum -= 10;
+        dealerAces--;
+      }
     }
 
     if (dealerSum > 21) {
       message = "Dealer busts! You win! 🥳";
       payout(true);
     } else if (dealerSum > sum) {
-      // Dealer has a higher score than you
       message = "Dealer wins with " + dealerSum + ". 😭";
       payout(false);
     } else if (dealerSum < sum) {
-      // You have a higher score than the dealer
       message = "You win! Dealer had " + dealerSum + ". 🥳";
       payout(true);
     } else {
-      // It's a draw (Push)
       message = "It's a tie! 🤝";
-      balance += currentBet;
+      // Push: Give the bet back to the balance
+      balance += currentBet; 
+      currentBet = 0; // Clear the table
       updateUI();
     }
 
     messageEl.textContent = message;
   }
 }
+
 // --- BETTING LOGIC ---
 function updateUI() {
   balanceEl.textContent = "$" + balance;
@@ -148,17 +169,19 @@ function decreaseBet() {
 }
 
 function payout(didWin) {
+  // Fix the Double-Deduction Bug: 
+  // If they win, give double the bet back. If they lose, do nothing (money is already gone).
   if (didWin === true) {
     balance += currentBet * 2;
-  } else {
-    balance -= currentBet;
   }
   
-  // NEW: Prevent negative balance and trigger bankruptcy
-  if (balance <= 0) {
-    balance = 0;
-    currentBet = 0; // Force their bet to 0
-  }
+  // Clear the bet for the next round
+  currentBet = 0;
   
   updateUI();
+
+  // If they lost everything, prompt a reset
+  if (balance < 10) {
+    messageEl.textContent = "Bankrupt! Click Deal to reset.";
+  }
 }
