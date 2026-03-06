@@ -69,6 +69,7 @@ function startGame() {
   // Prevent playing without betting
   if (currentBet === 0) {
     messageEl.textContent = "Please place a bet first!";
+    newGame();
     return;
   }
 
@@ -157,6 +158,12 @@ function stand() {
     // NEW: Update the button text when the round is completely over
     newGameBtn.textContent = "New Game";
   }
+}
+
+function newGame() {
+  sumEl.textContent = 0;
+  cardsEl.textContent = " — ";
+  newGameBtn.textContent = "DEAL CARDS"
 }
 
 // --- BETTING LOGIC ---
