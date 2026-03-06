@@ -61,7 +61,7 @@ function startGame() {
     cardsEl.textContent = "—";
     sumEl.textContent = "0";
     messageEl.textContent = "Bankroll reset to $200! Place a bet! 💸";
-    newGameBtn.textContent = ""; // Reset text if bankrupt
+    newGameBtn.textContent = "DEAL CARDS"; // Reset text if bankrupt
     updateUI();
     return;
   }
